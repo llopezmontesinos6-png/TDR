@@ -1,2 +1,2 @@
 # TDR
-código para llamar a a la API key
+documentos para la integracion de IA
