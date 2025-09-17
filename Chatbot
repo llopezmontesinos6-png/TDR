@@ -1,16 +1,16 @@
 
-pip install openai chromadb
-
+import os
 import json
-import openai
 import chromadb
 from chromadb.utils import embedding_functions
+from PyPDF2 import PdfReader
 
 # Inicializar cliente OpenAI
-client = openai()
+from openai import OpenAI
+client = OpenAI()
 
 # Cargar datos desde JSON
-with open("mis_datos.json", "r", encoding="utf-8") as f:
+with open("mis_datos", "r", encoding="utf-8") as f:
     docs = json.load(f)
 
 # Inicializar Chroma con embeddings de OpenAI
@@ -24,6 +24,36 @@ collection = chroma_client.create_collection(
     name="mi_bd",
     embedding_function=embedding_function
 )
+collection = chroma_client.create_collection(
+    name="mis_documentos",
+    embedding_function=embedding_function
+)
+# Carpeta donde están los documentos
+carpeta_docs = "documentos"
+
+# Función para leer PDFs y TXT
+def leer_documento(ruta):
+    texto = ""
+    if ruta.endswith(".pdf"):
+        reader = PdfReader(ruta)
+        for page in reader.pages:
+            texto += page.extract_text() + "\n"
+    elif ruta.endswith(".txt"):
+        with open(ruta, "r", encoding="utf-8") as f:
+            texto = f.read()
+    return texto
+
+# Cargar documentos en la base vectorial
+for archivo in os.listdir(carpeta_docs):
+    ruta = os.path.join(carpeta_docs, archivo)
+    if archivo.endswith((".pdf", ".txt")):
+        contenido = leer_documento(ruta)
+        if contenido.strip():
+            collection.add(
+                ids=[archivo],
+                documents=[contenido],
+                metadatas=[{"nombre": archivo}]
+            )
 
 # Cargar documentos a Chroma
 for doc in docs:
