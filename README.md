@@ -1,2 +1,2 @@
 # TDR
-documentos para la integracion de IA
+documentos para el chatbot i la integracion de IA
